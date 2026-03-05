@@ -9,6 +9,22 @@ services:
     environment:
       - APP_ENV=prod
       - APP_DEBUG=0
+    depends_on:
+      - mysql
+    networks:
+      - sticker-bot-network
+
+  mysql:
+    image: mysql:8.0
+    container_name: sticker-bot-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-sticker_bot}
+      MYSQL_USER: ${MYSQL_USER:-sticker_bot}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-stickerpass}
+    volumes:
+      - mysql-data:/var/lib/mysql
     networks:
       - sticker-bot-network
 
@@ -45,3 +61,4 @@ volumes:
   app-data:
   certbot-webroot:
   certbot-certs:
+  mysql-data:

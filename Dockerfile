@@ -23,6 +23,7 @@ RUN docker-php-ext-configure gd \
 RUN docker-php-ext-install \
     pdo \
     pdo_sqlite \
+    pdo_mysql \
     gd \
     intl \
     mbstring \

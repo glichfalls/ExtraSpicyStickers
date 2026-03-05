@@ -64,7 +64,14 @@ TELEGRAM_BOT_USERNAME=REPLACE_WITH_BOT_USERNAME
 
 OPENAI_API_KEY=REPLACE_WITH_YOUR_OPENAI_KEY
 
-DATABASE_URL="sqlite:///%kernel.project_dir%/var/data.db"
+# Database (MySQL)
+DATABASE_URL="mysql://sticker_bot:stickerpass@mysql:3306/sticker_bot?serverVersion=8.0&charset=utf8mb4"
+
+# MySQL Configuration
+MYSQL_ROOT_PASSWORD=rootpassword
+MYSQL_DATABASE=sticker_bot
+MYSQL_USER=sticker_bot
+MYSQL_PASSWORD=stickerpass
 EOF
 
 # Create repo config
