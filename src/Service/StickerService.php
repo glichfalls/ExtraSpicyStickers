@@ -7,49 +7,25 @@ use App\Entity\User;
 use App\Repository\StickerPackRepository;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
+use TelegramBot\Api\BotApi;
 
 class StickerService
 {
     private ImageManager $imageManager;
 
     public function __construct(
-        private readonly TelegramService $telegramService,
+        private readonly BotApi $botApi,
         private readonly StickerPackRepository $stickerPackRepository,
         private readonly string $botUsername,
     ) {
         $this->imageManager = new ImageManager(new Driver());
     }
 
-    public function convertToWebP(string $imageData): string
-    {
-        $image = $this->imageManager->read($imageData);
-
-        $width = $image->width();
-        $height = $image->height();
-
-        if ($width > $height) {
-            $image->resize(512, null, function ($constraint) {
-                $constraint->aspectRatio();
-                $constraint->upsize();
-            });
-        } else {
-            $image->resize(null, 512, function ($constraint) {
-                $constraint->aspectRatio();
-                $constraint->upsize();
-            });
-        }
-
-        return $image->toWebp(90)->toString();
-    }
-
     public function convertToPng(string $imageData): string
     {
         $image = $this->imageManager->read($imageData);
 
-        $width = $image->width();
-        $height = $image->height();
-
-        if ($width > $height) {
+        if ($image->width() > $image->height()) {
             $image->scale(width: 512);
         } else {
             $image->scale(height: 512);
@@ -58,86 +34,77 @@ class StickerService
         return $image->toPng()->toString();
     }
 
-    public function getOrCreateStickerPack(User $user, string $emoji, string $pngData): StickerPack
+    public function ensurePack(User $user): StickerPack
     {
-        $existingPack = $this->stickerPackRepository->findByUser($user);
-
-        if ($existingPack !== null) {
-            return $existingPack;
+        $existing = $this->stickerPackRepository->findByUser($user);
+        if ($existing !== null) {
+            return $existing;
         }
 
-        $packName = $this->generatePackName($user);
+        $packName = sprintf('stickers_%d_by_%s', $user->getTelegramId(), $this->botUsername);
         $packTitle = sprintf("%s's AI Stickers", $user->getFirstName());
 
-        $fileId = $this->telegramService->uploadStickerFile($user->getTelegramId(), $pngData);
+        $this->callWithTempFile($this->createPlaceholderPng(), function (string $tempFile) use ($user, $packName, $packTitle) {
+            $this->botApi->call('createNewStickerSet', [
+                'user_id' => $user->getTelegramId(),
+                'name' => $packName,
+                'title' => $packTitle,
+                'stickers' => json_encode([[
+                    'sticker' => 'attach://sticker_file',
+                    'format' => 'static',
+                    'emoji_list' => ["\u{1F3A8}"],
+                ]]),
+                'sticker_file' => new \CURLFile($tempFile, 'image/png', 'sticker.png'),
+            ]);
+        });
 
-        if ($fileId === null) {
-            throw new \RuntimeException('Failed to upload sticker file');
-        }
-
-        $success = $this->telegramService->createStickerSet(
-            $user->getTelegramId(),
-            $packName,
-            $packTitle,
-            $fileId,
-            $emoji
-        );
-
-        if (!$success) {
-            throw new \RuntimeException('Failed to create sticker pack');
-        }
-
-        $stickerPack = new StickerPack();
-        $stickerPack->setUser($user);
-        $stickerPack->setName($packName);
-        $stickerPack->setTitle($packTitle);
-        $stickerPack->setStickerCount(1);
-
-        $this->stickerPackRepository->save($stickerPack);
-
-        $user->setStickerPackName($packName);
-
-        return $stickerPack;
-    }
-
-    public function addStickerToPack(User $user, string $pngData, string $emoji): void
-    {
-        $pack = $this->stickerPackRepository->findByUser($user);
-
-        if ($pack === null) {
-            $this->getOrCreateStickerPack($user, $emoji, $pngData);
-            return;
-        }
-
-        $fileId = $this->telegramService->uploadStickerFile($user->getTelegramId(), $pngData);
-
-        if ($fileId === null) {
-            throw new \RuntimeException('Failed to upload sticker file');
-        }
-
-        $success = $this->telegramService->addStickerToSet(
-            $user->getTelegramId(),
-            $pack->getName(),
-            $fileId,
-            $emoji
-        );
-
-        if (!$success) {
-            throw new \RuntimeException('Failed to add sticker to pack');
-        }
-
-        $pack->incrementStickerCount();
+        $pack = new StickerPack();
+        $pack->setUser($user);
+        $pack->setName($packName);
         $this->stickerPackRepository->save($pack);
+
+        return $pack;
     }
 
-    public function generatePackName(User $user): string
+    public function addSticker(StickerPack $pack, string $pngData, string $emoji): void
     {
-        return sprintf('stickers_by_%d_by_%s', $user->getTelegramId(), $this->botUsername);
+        $this->callWithTempFile($pngData, function (string $tempFile) use ($pack, $emoji) {
+            $this->botApi->call('addStickerToSet', [
+                'user_id' => $pack->getUser()->getTelegramId(),
+                'name' => $pack->getName(),
+                'sticker' => json_encode([
+                    'sticker' => 'attach://sticker_file',
+                    'format' => 'static',
+                    'emoji_list' => [$emoji],
+                ]),
+                'sticker_file' => new \CURLFile($tempFile, 'image/png', 'sticker.png'),
+            ]);
+        });
     }
 
-    public function getStickerPackUrl(User $user): string
+    public function getLastStickerFileId(StickerPack $pack): string
     {
-        $packName = $user->getStickerPackName() ?? $this->generatePackName($user);
-        return sprintf('https://t.me/addstickers/%s', $packName);
+        $stickerSet = $this->botApi->call('getStickerSet', ['name' => $pack->getName()]);
+        $lastSticker = end($stickerSet['stickers']);
+
+        return $lastSticker['file_id'];
+    }
+
+    private function createPlaceholderPng(): string
+    {
+        $image = $this->imageManager->create(512, 512)->fill('rgba(255, 255, 255, 0)');
+        return $image->toPng()->toString();
+    }
+
+    private function callWithTempFile(string $data, callable $callback): void
+    {
+        $tempFile = tempnam(sys_get_temp_dir(), 'sticker_');
+        file_put_contents($tempFile, $data);
+
+        try {
+            $callback($tempFile);
+        } finally {
+            @unlink($tempFile);
+        }
     }
 }

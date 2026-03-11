@@ -16,14 +16,9 @@ class UserRepository extends ServiceEntityRepository
         parent::__construct($registry, User::class);
     }
 
-    public function findByTelegramId(int $telegramId): ?User
-    {
-        return $this->findOneBy(['telegramId' => $telegramId]);
-    }
-
     public function findOrCreateByTelegramData(int $telegramId, string $firstName, ?string $username = null): User
     {
-        $user = $this->findByTelegramId($telegramId);
+        $user = $this->findOneBy(['telegramId' => $telegramId]);
 
         if ($user === null) {
             $user = new User();
@@ -37,14 +32,5 @@ class UserRepository extends ServiceEntityRepository
         $this->getEntityManager()->flush();
 
         return $user;
-    }
-
-    public function save(User $user, bool $flush = true): void
-    {
-        $this->getEntityManager()->persist($user);
-
-        if ($flush) {
-            $this->getEntityManager()->flush();
-        }
     }
 }

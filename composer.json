@@ -7,12 +7,15 @@
         "php": ">=8.2",
         "ext-ctype": "*",
         "ext-iconv": "*",
-                "doctrine/doctrine-bundle": "^2.11",
+        "boshurik/telegram-bot-bundle": "^6.0",
+        "doctrine/doctrine-bundle": "^2.11",
         "doctrine/doctrine-migrations-bundle": "^3.3",
         "doctrine/orm": "^3.0",
         "intervention/image": "^3.0",
+        "p3k/emoji-detector": "^1.2",
         "symfony/console": "^7.0",
         "symfony/dotenv": "^7.0",
+        "symfony/emoji": "^7.0",
         "symfony/flex": "^2",
         "symfony/framework-bundle": "^7.0",
         "symfony/http-client": "^7.0",
@@ -20,7 +23,9 @@
         "symfony/yaml": "^7.0"
     },
     "require-dev": {
-        "symfony/maker-bundle": "^1.52"
+        "symfony/maker-bundle": "^1.52",
+        "symfony/stopwatch": "^7.0",
+        "symfony/web-profiler-bundle": "^7.0"
     },
     "config": {
         "allow-plugins": {

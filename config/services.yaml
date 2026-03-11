@@ -17,10 +17,6 @@ services:
         arguments:
             $httpClient: '@openai.client'
 
-    App\Service\TelegramService:
-        arguments:
-            $httpClient: '@telegram.client'
-
     App\Service\StickerService:
         arguments:
             $botUsername: '%telegram_bot_username%'

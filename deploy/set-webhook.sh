@@ -1,36 +1,12 @@
 #!/bin/bash
 
-# Set Telegram Webhook Script
+# Set Telegram Webhook using Symfony command
+# Usage: ./set-webhook.sh [url-or-hostname]
 
-if [ -z "$1" ]; then
-    # Try to read from .env
-    if [ -f .env ]; then
-        source .env
-        DOMAIN=$WEBHOOK_DOMAIN
-        TOKEN=$TELEGRAM_BOT_TOKEN
-    fi
+cd /opt/sticker-bot
+
+if [ -n "$1" ]; then
+    docker compose -f docker-compose.prod.yml exec -T app php bin/console telegram:webhook:set "$1"
 else
-    DOMAIN=$1
-    TOKEN=$2
+    docker compose -f docker-compose.prod.yml exec -T app php bin/console telegram:webhook:set
 fi
-
-if [ -z "$DOMAIN" ] || [ -z "$TOKEN" ]; then
-    echo "Usage: $0 <domain> <bot_token>"
-    echo "   or: Set WEBHOOK_DOMAIN and TELEGRAM_BOT_TOKEN in .env"
-    exit 1
-fi
-
-WEBHOOK_URL="https://${DOMAIN}/webhook/${TOKEN}"
-
-echo "Setting webhook to: https://${DOMAIN}/webhook/***"
-
-RESPONSE=$(curl -s -X POST "https://api.telegram.org/bot${TOKEN}/setWebhook" \
-    -H "Content-Type: application/json" \
-    -d "{\"url\": \"${WEBHOOK_URL}\"}")
-
-echo "Response: $RESPONSE"
-
-# Verify webhook
-echo ""
-echo "Verifying webhook..."
-curl -s "https://api.telegram.org/bot${TOKEN}/getWebhookInfo" | python3 -m json.tool 2>/dev/null || echo "$RESPONSE"

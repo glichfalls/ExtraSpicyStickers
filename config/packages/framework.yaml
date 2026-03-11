@@ -13,5 +13,3 @@ framework:
                 headers:
                     Authorization: 'Bearer %env(OPENAI_API_KEY)%'
                     Content-Type: 'application/json'
-            telegram.client:
-                base_uri: 'https://api.telegram.org/bot%env(TELEGRAM_BOT_TOKEN)%/'

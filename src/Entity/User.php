@@ -3,8 +3,6 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
@@ -25,17 +23,8 @@ class User
     #[ORM\Column(length: 255)]
     private ?string $firstName = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $stickerPackName = null;
-
-    /** @var Collection<int, StickerPack> */
-    #[ORM\OneToMany(targetEntity: StickerPack::class, mappedBy: 'user', orphanRemoval: true)]
-    private Collection $stickerPacks;
-
-    public function __construct()
-    {
-        $this->stickerPacks = new ArrayCollection();
-    }
+    #[ORM\OneToOne(targetEntity: StickerPack::class, mappedBy: 'user')]
+    private ?StickerPack $stickerPack = null;
 
     public function getId(): ?int
     {
@@ -75,39 +64,8 @@ class User
         return $this;
     }
 
-    public function getStickerPackName(): ?string
+    public function getStickerPack(): ?StickerPack
     {
-        return $this->stickerPackName;
-    }
-
-    public function setStickerPackName(?string $stickerPackName): static
-    {
-        $this->stickerPackName = $stickerPackName;
-        return $this;
-    }
-
-    /** @return Collection<int, StickerPack> */
-    public function getStickerPacks(): Collection
-    {
-        return $this->stickerPacks;
-    }
-
-    public function addStickerPack(StickerPack $stickerPack): static
-    {
-        if (!$this->stickerPacks->contains($stickerPack)) {
-            $this->stickerPacks->add($stickerPack);
-            $stickerPack->setUser($this);
-        }
-        return $this;
-    }
-
-    public function removeStickerPack(StickerPack $stickerPack): static
-    {
-        if ($this->stickerPacks->removeElement($stickerPack)) {
-            if ($stickerPack->getUser() === $this) {
-                $stickerPack->setUser(null);
-            }
-        }
-        return $this;
+        return $this->stickerPack;
     }
 }

@@ -17,22 +17,14 @@ class StickerPackRepository extends ServiceEntityRepository
         parent::__construct($registry, StickerPack::class);
     }
 
-    public function findByName(string $name): ?StickerPack
-    {
-        return $this->findOneBy(['name' => $name]);
-    }
-
     public function findByUser(User $user): ?StickerPack
     {
         return $this->findOneBy(['user' => $user]);
     }
 
-    public function save(StickerPack $stickerPack, bool $flush = true): void
+    public function save(StickerPack $stickerPack): void
     {
         $this->getEntityManager()->persist($stickerPack);
-
-        if ($flush) {
-            $this->getEntityManager()->flush();
-        }
+        $this->getEntityManager()->flush();
     }
 }
