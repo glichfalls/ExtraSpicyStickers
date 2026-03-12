@@ -25,7 +25,7 @@ class StartCommand extends AbstractCommand implements PublicCommandInterface
 
         $api->call('sendMessage', [
             'chat_id' => $message->getChat()->getId(),
-            'text' => "Use /sticker to generate AI stickers!\n\nExample: /sticker 🐱 happy orange cat\n\nhttps://sticker-bot.srv1.netlabs.dev",
+            'text' => "Use /sticker to generate AI stickers!\n\nExample: /sticker 🐱 happy orange cat\nWith style: /sticker 🐱 cat --pixel\n\nSend a photo with /remix as caption to turn it into a sticker!\n\nhttps://sticker-bot.srv1.netlabs.dev",
             'reply_parameters' => json_encode(['message_id' => $message->getMessageId()]),
         ]);
     }
