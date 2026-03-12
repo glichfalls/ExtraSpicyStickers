@@ -2,9 +2,11 @@
 
 namespace App\Service;
 
+use App\Entity\Sticker;
 use App\Entity\StickerPack;
 use App\Entity\User;
 use App\Repository\StickerPackRepository;
+use App\Repository\StickerRepository;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
 use TelegramBot\Api\BotApi;
@@ -16,6 +18,7 @@ class StickerService
     public function __construct(
         private readonly BotApi $botApi,
         private readonly StickerPackRepository $stickerPackRepository,
+        private readonly StickerRepository $stickerRepository,
         private readonly string $botUsername,
     ) {
         $this->imageManager = new ImageManager(new Driver());
@@ -77,7 +80,7 @@ class StickerService
         return $pack;
     }
 
-    public function addSticker(StickerPack $pack, string $pngData, string $emoji): void
+    public function addSticker(StickerPack $pack, string $pngData, string $emoji, string $prompt): Sticker
     {
         $this->callWithTempFile($pngData, function (string $tempFile) use ($pack, $emoji) {
             $this->botApi->call('addStickerToSet', [
@@ -91,6 +94,17 @@ class StickerService
                 'sticker_file' => new \CURLFile($tempFile, 'image/png', 'sticker.png'),
             ]);
         });
+
+        $fileId = $this->getLastStickerFileId($pack);
+
+        $sticker = new Sticker();
+        $sticker->setPack($pack);
+        $sticker->setFileId($fileId);
+        $sticker->setEmoji($emoji);
+        $sticker->setPrompt($prompt);
+        $this->stickerRepository->save($sticker);
+
+        return $sticker;
     }
 
     public function getLastStickerFileId(StickerPack $pack): string

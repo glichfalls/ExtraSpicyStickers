@@ -85,12 +85,11 @@ class StickerCommand extends AbstractCommand implements PublicCommandInterface
 
             $imageData = $this->openAiImageService->generateImage($description);
             $pngData = $this->stickerService->convertToPng($imageData);
-            $this->stickerService->addSticker($pack, $pngData, $emoji);
+            $sticker = $this->stickerService->addSticker($pack, $pngData, $emoji, $description);
 
-            $fileId = $this->stickerService->getLastStickerFileId($pack);
             $api->call('sendSticker', [
                 'chat_id' => $chatId,
-                'sticker' => $fileId,
+                'sticker' => $sticker->getFileId(),
                 'reply_parameters' => json_encode(['message_id' => $messageId]),
             ]);
         } catch (\Throwable $e) {
