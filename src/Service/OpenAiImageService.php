@@ -61,10 +61,7 @@ class OpenAiImageService
             'json' => [
                 'model' => 'gpt-image-1',
                 'prompt' => $fullPrompt,
-                'images' => [[
-                    'type' => 'base64',
-                    'data' => $imageBase64,
-                ]],
+                'images' => ['data:image/png;base64,' . $imageBase64],
                 'size' => '1024x1024',
             ],
         ]);
