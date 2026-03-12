@@ -10,7 +10,6 @@
 ###< symfony/framework-bundle ###
 
 ###> doctrine/doctrine-bundle ###
-/migrations/*.php
 ###< doctrine/doctrine-bundle ###
 
 # IDE
