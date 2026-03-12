@@ -33,12 +33,6 @@ class OpenAiImageService
 
     private function buildStickerPrompt(string $userPrompt): string
     {
-        return sprintf(
-            'Create a sticker-style illustration: %s. ' .
-            'The image should have a clean, simple design suitable for a messaging sticker. ' .
-            'Use bold outlines, vibrant colors, and a transparent or solid background. ' .
-            'The style should be cute, expressive, and easily recognizable at small sizes.',
-            $userPrompt
-        );
+        return "Sticker: $userPrompt. Bold outlines, vibrant colors, transparent background, simple.";
     }
 }
