@@ -10,6 +10,7 @@ framework:
         scoped_clients:
             openai.client:
                 base_uri: 'https://api.openai.com/v1/'
+                timeout: 60
                 headers:
                     Authorization: 'Bearer %env(OPENAI_API_KEY)%'
                     Content-Type: 'application/json'
