@@ -88,6 +88,8 @@ class OpenAiImageService
         $body .= "--$boundary\r\n";
         $body .= "Content-Disposition: form-data; name=\"size\"\r\n\r\n512x512\r\n";
         $body .= "--$boundary\r\n";
+        $body .= "Content-Disposition: form-data; name=\"response_format\"\r\n\r\nb64_json\r\n";
+        $body .= "--$boundary\r\n";
         $body .= "Content-Disposition: form-data; name=\"image\"; filename=\"image.png\"\r\n";
         $body .= "Content-Type: image/png\r\n\r\n";
         $body .= $pngData . "\r\n";
