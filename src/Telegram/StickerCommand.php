@@ -39,7 +39,11 @@ class StickerCommand extends AbstractCommand
     {
         $text = $update->getMessage()?->getText();
 
-        return $text !== null && !str_starts_with($text, '/');
+        if ($text === null) {
+            return false;
+        }
+
+        return str_starts_with($text, '/sticker ') || $text === '/sticker';
     }
 
     public function execute(BotApi $api, Update $update): void
@@ -48,7 +52,7 @@ class StickerCommand extends AbstractCommand
         $chatId = $message->getChat()->getId();
         $messageId = $message->getMessageId();
         $from = $message->getFrom();
-        $text = trim($message->getText());
+        $text = trim(preg_replace('/^\/sticker\s*/', '', $message->getText()));
 
         $emoji = $this->extractEmoji($text);
         $description = trim(remove_emoji($text));
