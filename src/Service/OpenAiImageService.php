@@ -63,13 +63,13 @@ class OpenAiImageService
 
             $body = '';
             $body .= "--$boundary\r\n";
-            $body .= "Content-Disposition: form-data; name=\"model\"\r\n\r\ngpt-image-1-mini\r\n";
+            $body .= "Content-Disposition: form-data; name=\"model\"\r\n\r\ndall-e-2\r\n";
             $body .= "--$boundary\r\n";
             $body .= "Content-Disposition: form-data; name=\"prompt\"\r\n\r\n$fullPrompt\r\n";
             $body .= "--$boundary\r\n";
             $body .= "Content-Disposition: form-data; name=\"size\"\r\n\r\n512x512\r\n";
             $body .= "--$boundary\r\n";
-            $body .= "Content-Disposition: form-data; name=\"image[]\"; filename=\"image.png\"\r\n";
+            $body .= "Content-Disposition: form-data; name=\"image\"; filename=\"image.png\"\r\n";
             $body .= "Content-Type: image/png\r\n\r\n";
             $body .= $imageData . "\r\n";
             $body .= "--$boundary--\r\n";
