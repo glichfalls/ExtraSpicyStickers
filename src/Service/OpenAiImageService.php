@@ -55,29 +55,29 @@ class OpenAiImageService
         $stylePrompt = self::STYLES[$style]['prompt'] ?? self::STYLES['default']['prompt'];
         $fullPrompt = "Turn this into a sticker: $prompt. $stylePrompt";
 
-        // Convert to PNG (Telegram sends JPEG, dall-e-2 requires PNG)
-        $gd = imagecreatefromstring($imageData);
-        if ($gd === false) {
+        // Convert to RGBA PNG (Telegram sends JPEG, dall-e-2 requires RGBA PNG < 4MB)
+        $src = imagecreatefromstring($imageData);
+        if ($src === false) {
             throw new \RuntimeException('Failed to read uploaded image');
         }
-        // Resize if larger than 1024x1024 to stay under 4MB
-        $w = imagesx($gd);
-        $h = imagesy($gd);
-        if ($w > 1024 || $h > 1024) {
-            $scale = min(1024 / $w, 1024 / $h);
-            $nw = (int) ($w * $scale);
-            $nh = (int) ($h * $scale);
-            $resized = imagecreatetruecolor($nw, $nh);
-            imagealphablending($resized, false);
-            imagesavealpha($resized, true);
-            imagecopyresampled($resized, $gd, 0, 0, 0, 0, $nw, $nh, $w, $h);
-            imagedestroy($gd);
-            $gd = $resized;
-        }
+        $w = imagesx($src);
+        $h = imagesy($src);
+        $scale = ($w > 1024 || $h > 1024) ? min(1024 / $w, 1024 / $h) : 1.0;
+        $nw = (int) ($w * $scale);
+        $nh = (int) ($h * $scale);
+
+        $rgba = imagecreatetruecolor($nw, $nh);
+        imagealphablending($rgba, false);
+        imagesavealpha($rgba, true);
+        $transparent = imagecolorallocatealpha($rgba, 0, 0, 0, 127);
+        imagefill($rgba, 0, 0, $transparent);
+        imagecopyresampled($rgba, $src, 0, 0, 0, 0, $nw, $nh, $w, $h);
+        imagedestroy($src);
+
         ob_start();
-        imagepng($gd);
+        imagepng($rgba);
         $pngData = ob_get_clean();
-        imagedestroy($gd);
+        imagedestroy($rgba);
 
         $boundary = bin2hex(random_bytes(16));
 
