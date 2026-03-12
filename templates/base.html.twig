@@ -20,28 +20,73 @@
         .nav {
             display: flex;
             align-items: center;
-            gap: 1.5rem;
-            padding: 1rem 2rem;
-            border-bottom: 1px solid #1a1a1a;
+            justify-content: space-between;
+            padding: 0 2rem;
+            height: 56px;
+            background: rgba(15, 15, 15, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
         }
 
         .nav-logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #ff6b35, #ff3366);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #fff;
             text-decoration: none;
+            letter-spacing: -0.02em;
         }
 
-        .nav a {
-            color: #888;
-            font-size: 0.9rem;
+        .nav-logo-icon {
+            font-size: 1.3rem;
         }
 
-        .nav a:hover {
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .nav-links a {
+            color: #777;
+            font-size: 0.875rem;
+            font-weight: 500;
+            padding: 0.4rem 0.75rem;
+            border-radius: 8px;
+            transition: color 0.15s, background 0.15s;
+        }
+
+        .nav-links a:hover {
             color: #e0e0e0;
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .nav-cta {
+            font-size: 0.8rem;
+            font-weight: 500;
+            padding: 0.4rem 1rem;
+            background: linear-gradient(135deg, #ff6b35, #ff3366);
+            color: #fff !important;
+            border-radius: 20px;
+            transition: opacity 0.15s, transform 0.15s;
+        }
+
+        .nav-cta:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+            background: linear-gradient(135deg, #ff6b35, #ff3366) !important;
         }
 
         {% block styles %}{% endblock %}
@@ -49,8 +94,15 @@
 </head>
 <body>
     <nav class="nav">
-        <a href="{{ path('landing') }}" class="nav-logo">Extra Spicy Stickers</a>
-        <a href="{{ path('gallery') }}">Gallery</a>
+        <div class="nav-left">
+            <a href="{{ path('landing') }}" class="nav-logo">
+                <span class="nav-logo-icon">🌶️</span> Extra Spicy
+            </a>
+            <div class="nav-links">
+                <a href="{{ path('gallery') }}">Gallery</a>
+            </div>
+        </div>
+        <a href="https://t.me/{{ bot_username }}" class="nav-cta">Open Bot</a>
     </nav>
     {% block body %}{% endblock %}
 </body>
