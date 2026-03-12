@@ -44,19 +44,30 @@ class StickerService
         $packName = sprintf('stickers_%d_by_%s', $user->getTelegramId(), $this->botUsername);
         $packTitle = sprintf("%s's AI Stickers", $user->getFirstName());
 
-        $this->callWithTempFile($this->createPlaceholderPng(), function (string $tempFile) use ($user, $packName, $packTitle) {
-            $this->botApi->call('createNewStickerSet', [
-                'user_id' => $user->getTelegramId(),
-                'name' => $packName,
-                'title' => $packTitle,
-                'stickers' => json_encode([[
-                    'sticker' => 'attach://sticker_file',
-                    'format' => 'static',
-                    'emoji_list' => ["\u{1F3A8}"],
-                ]]),
-                'sticker_file' => new \CURLFile($tempFile, 'image/png', 'sticker.png'),
-            ]);
-        });
+        // Check if the sticker set already exists on Telegram
+        $existsOnTelegram = false;
+        try {
+            $this->botApi->call('getStickerSet', ['name' => $packName]);
+            $existsOnTelegram = true;
+        } catch (\Exception) {
+            // Set doesn't exist, we'll create it
+        }
+
+        if (!$existsOnTelegram) {
+            $this->callWithTempFile($this->createPlaceholderPng(), function (string $tempFile) use ($user, $packName, $packTitle) {
+                $this->botApi->call('createNewStickerSet', [
+                    'user_id' => $user->getTelegramId(),
+                    'name' => $packName,
+                    'title' => $packTitle,
+                    'stickers' => json_encode([[
+                        'sticker' => 'attach://sticker_file',
+                        'format' => 'static',
+                        'emoji_list' => ["\u{1F3A8}"],
+                    ]]),
+                    'sticker_file' => new \CURLFile($tempFile, 'image/png', 'sticker.png'),
+                ]);
+            });
+        }
 
         $pack = new StickerPack();
         $pack->setUser($user);
