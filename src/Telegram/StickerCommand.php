@@ -70,7 +70,16 @@ class StickerCommand extends AbstractCommand implements PublicCommandInterface
                 $from->getUsername()
             );
 
-            $pack = $this->stickerService->ensurePack($user);
+            try {
+                $pack = $this->stickerService->ensurePack($user);
+            } catch (\Exception $e) {
+                if (str_contains($e->getMessage(), 'PEER_ID_INVALID')) {
+                    $botUsername = $_ENV['TELEGRAM_BOT_USERNAME'] ?? 'the bot';
+                    $this->reply($api, $chatId, $messageId, "Please start a private chat with @$botUsername first, then try again.");
+                    return;
+                }
+                throw $e;
+            }
 
             $this->reply($api, $chatId, $messageId, 'Generating your sticker...');
 
