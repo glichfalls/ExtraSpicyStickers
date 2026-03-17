@@ -110,7 +110,7 @@ class StickerCommand extends AbstractCommand implements PublicCommandInterface
             $api->call('sendSticker', [
                 'chat_id' => $chatId,
                 'sticker' => $sticker->getFileId(),
-                'reply_parameters' => json_encode(['message_id' => $messageId]),
+                'reply_parameters' => json_encode(['message_id' => $messageId, 'allow_sending_without_reply' => true]),
             ]);
         } catch (\Throwable $e) {
             $this->logger->error('Failed to generate sticker', [
@@ -129,7 +129,7 @@ class StickerCommand extends AbstractCommand implements PublicCommandInterface
         $api->call('sendMessage', [
             'chat_id' => $chatId,
             'text' => $text,
-            'reply_parameters' => json_encode(['message_id' => $messageId]),
+            'reply_parameters' => json_encode(['message_id' => $messageId, 'allow_sending_without_reply' => true]),
         ]);
     }
 
