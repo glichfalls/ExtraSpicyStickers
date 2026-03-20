@@ -43,8 +43,13 @@
                         {% endif %}
                     </td>
                     <td>
-                        {% if user.stickerPack %}
-                            <a href="{{ path('gallery_pack', {id: user.stickerPack.id}) }}">View</a>
+                        {% if user.activeStickerPack %}
+                            <a href="{{ path('gallery_pack', {id: user.activeStickerPack.id}) }}">View</a>
+                            {% if user.stickerPacks|length > 1 %}
+                                ({{ user.stickerPacks|length }} packs)
+                            {% endif %}
+                        {% elseif user.stickerPacks|length > 0 %}
+                            <a href="{{ path('gallery_pack', {id: user.stickerPacks|first.id}) }}">View</a>
                         {% else %}
                             —
                         {% endif %}

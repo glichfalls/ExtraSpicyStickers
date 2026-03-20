@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
@@ -35,8 +37,18 @@ class User
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $password = null;
 
-    #[ORM\OneToOne(targetEntity: StickerPack::class, mappedBy: 'user')]
-    private ?StickerPack $stickerPack = null;
+    /** @var Collection<int, StickerPack> */
+    #[ORM\OneToMany(targetEntity: StickerPack::class, mappedBy: 'user')]
+    private Collection $stickerPacks;
+
+    #[ORM\ManyToOne(targetEntity: StickerPack::class)]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?StickerPack $activeStickerPack = null;
+
+    public function __construct()
+    {
+        $this->stickerPacks = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -120,8 +132,20 @@ class User
         return $this;
     }
 
-    public function getStickerPack(): ?StickerPack
+    /** @return Collection<int, StickerPack> */
+    public function getStickerPacks(): Collection
     {
-        return $this->stickerPack;
+        return $this->stickerPacks;
+    }
+
+    public function getActiveStickerPack(): ?StickerPack
+    {
+        return $this->activeStickerPack;
+    }
+
+    public function setActiveStickerPack(?StickerPack $pack): static
+    {
+        $this->activeStickerPack = $pack;
+        return $this;
     }
 }

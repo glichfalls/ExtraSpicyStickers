@@ -14,12 +14,15 @@ class StickerPack
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\OneToOne(inversedBy: 'stickerPack')]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'stickerPacks')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
     #[ORM\Column(length: 255, unique: true)]
     private ?string $name = null;
+
+    #[ORM\Column(length: 255)]
+    private string $title = '';
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private \DateTimeInterface $createdAt;
@@ -53,6 +56,17 @@ class StickerPack
     public function setName(string $name): static
     {
         $this->name = $name;
+        return $this;
+    }
+
+    public function getTitle(): string
+    {
+        return $this->title;
+    }
+
+    public function setTitle(string $title): static
+    {
+        $this->title = $title;
         return $this;
     }
 

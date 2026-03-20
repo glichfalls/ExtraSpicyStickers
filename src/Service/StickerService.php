@@ -7,6 +7,7 @@ use App\Entity\StickerPack;
 use App\Entity\User;
 use App\Repository\StickerPackRepository;
 use App\Repository\StickerRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
 use TelegramBot\Api\BotApi;
@@ -19,6 +20,7 @@ class StickerService
         private readonly BotApi $botApi,
         private readonly StickerPackRepository $stickerPackRepository,
         private readonly StickerRepository $stickerRepository,
+        private readonly EntityManagerInterface $entityManager,
         private readonly string $botUsername,
         private readonly string $projectDir,
     ) {
@@ -40,13 +42,30 @@ class StickerService
 
     public function ensurePack(User $user): StickerPack
     {
-        $existing = $this->stickerPackRepository->findByUser($user);
-        if ($existing !== null) {
-            return $existing;
+        $activePack = $user->getActiveStickerPack();
+        if ($activePack !== null) {
+            return $activePack;
         }
 
-        $packName = sprintf('stickers_%d_by_%s', $user->getTelegramId(), $this->botUsername);
-        $packTitle = sprintf("%s's AI Stickers", $user->getFirstName());
+        // Check if user has any existing packs (migration from old schema)
+        $packs = $this->stickerPackRepository->findAllByUser($user);
+        if (!empty($packs)) {
+            $pack = $packs[0];
+            $user->setActiveStickerPack($pack);
+            $this->entityManager->flush();
+            return $pack;
+        }
+
+        // Create first pack
+        return $this->createPack($user, sprintf("%s's AI Stickers", $user->getFirstName()));
+    }
+
+    public function createPack(User $user, string $title): StickerPack
+    {
+        $packCount = $this->stickerPackRepository->countByUser($user);
+        $packName = $packCount === 0
+            ? sprintf('stickers_%d_by_%s', $user->getTelegramId(), $this->botUsername)
+            : sprintf('stickers_%d_%d_by_%s', $user->getTelegramId(), $packCount + 1, $this->botUsername);
 
         // Check if the sticker set already exists on Telegram
         $existsOnTelegram = false;
@@ -58,11 +77,11 @@ class StickerService
         }
 
         if (!$existsOnTelegram) {
-            $this->callWithTempFile($this->createPlaceholderPng(), function (string $tempFile) use ($user, $packName, $packTitle) {
+            $this->callWithTempFile($this->createPlaceholderPng(), function (string $tempFile) use ($user, $packName, $title) {
                 $this->botApi->call('createNewStickerSet', [
                     'user_id' => $user->getTelegramId(),
                     'name' => $packName,
-                    'title' => $packTitle,
+                    'title' => $title,
                     'stickers' => json_encode([[
                         'sticker' => 'attach://sticker_file',
                         'format' => 'static',
@@ -76,9 +95,24 @@ class StickerService
         $pack = new StickerPack();
         $pack->setUser($user);
         $pack->setName($packName);
+        $pack->setTitle($title);
         $this->stickerPackRepository->save($pack);
 
+        $user->setActiveStickerPack($pack);
+        $this->entityManager->flush();
+
         return $pack;
+    }
+
+    public function renamePack(StickerPack $pack, string $newTitle): void
+    {
+        $this->botApi->call('setStickerSetTitle', [
+            'name' => $pack->getName(),
+            'title' => $newTitle,
+        ]);
+
+        $pack->setTitle($newTitle);
+        $this->entityManager->flush();
     }
 
     public function addSticker(StickerPack $pack, string $pngData, string $emoji, string $prompt): Sticker

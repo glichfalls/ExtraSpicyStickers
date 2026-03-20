@@ -17,9 +17,20 @@ class StickerPackRepository extends ServiceEntityRepository
         parent::__construct($registry, StickerPack::class);
     }
 
-    public function findByUser(User $user): ?StickerPack
+    /** @return StickerPack[] */
+    public function findAllByUser(User $user): array
     {
-        return $this->findOneBy(['user' => $user]);
+        return $this->findBy(['user' => $user], ['createdAt' => 'ASC']);
+    }
+
+    public function countByUser(User $user): int
+    {
+        return (int) $this->createQueryBuilder('p')
+            ->select('COUNT(p.id)')
+            ->where('p.user = :user')
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 
     public function save(StickerPack $stickerPack): void
