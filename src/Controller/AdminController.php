@@ -6,6 +6,7 @@ use App\Entity\User;
 use App\Repository\StickerPackRepository;
 use App\Repository\StickerRepository;
 use App\Repository\UserRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -29,8 +30,9 @@ class AdminController extends AbstractController
 
             $user = $userRepository->findOneBy(['username' => $username]);
 
-            if ($user && $user->isAdmin() && $user->getPassword() !== null && password_verify($password, $user->getPassword())) {
+            if ($user && $user->isAdmin() && null !== $user->getPassword() && password_verify($password, $user->getPassword())) {
                 $request->getSession()->set('admin_user_id', $user->getId());
+
                 return $this->redirectToRoute('admin_dashboard');
             }
 
@@ -44,6 +46,7 @@ class AdminController extends AbstractController
     public function logout(Request $request): Response
     {
         $request->getSession()->remove('admin_user_id');
+
         return $this->redirectToRoute('landing');
     }
 
@@ -75,7 +78,7 @@ class AdminController extends AbstractController
     }
 
     #[Route('/password', name: 'admin_password', methods: ['GET', 'POST'])]
-    public function changePassword(Request $request, UserRepository $userRepository): Response
+    public function changePassword(Request $request, UserRepository $userRepository, EntityManagerInterface $entityManager): Response
     {
         $admin = $this->getAdminUser($request, $userRepository);
         if (!$admin) {
@@ -95,7 +98,7 @@ class AdminController extends AbstractController
                 $error = 'Passwords do not match.';
             } else {
                 $admin->setPassword(password_hash($newPassword, PASSWORD_BCRYPT));
-                $userRepository->getEntityManager()->flush();
+                $entityManager->flush();
                 $saved = true;
             }
         }
@@ -121,7 +124,7 @@ class AdminController extends AbstractController
     }
 
     #[Route('/users/{id}', name: 'admin_user_edit', methods: ['GET', 'POST'])]
-    public function editUser(int $id, Request $request, UserRepository $userRepository): Response
+    public function editUser(int $id, Request $request, UserRepository $userRepository, EntityManagerInterface $entityManager): Response
     {
         $admin = $this->getAdminUser($request, $userRepository);
         if (!$admin) {
@@ -138,33 +141,33 @@ class AdminController extends AbstractController
         if ($request->isMethod('POST')) {
             $action = $request->request->get('action');
 
-            if ($action === 'toggle_ban') {
+            if ('toggle_ban' === $action) {
                 $user->setBanned(!$user->isBanned());
-            } elseif ($action === 'toggle_admin') {
+            } elseif ('toggle_admin' === $action) {
                 if ($user->getId() !== $admin->getId()) {
                     $user->setIsAdmin(!$user->isAdmin());
-                    if ($user->isAdmin() && $user->getPassword() === null) {
+                    if ($user->isAdmin() && null === $user->getPassword()) {
                         // Set a temporary password the new admin must change
                         $tempPassword = bin2hex(random_bytes(4));
                         $user->setPassword(password_hash($tempPassword, PASSWORD_BCRYPT));
-                        $request->getSession()->set('temp_password_' . $user->getId(), $tempPassword);
+                        $request->getSession()->set('temp_password_'.$user->getId(), $tempPassword);
                     }
                 }
-            } elseif ($action === 'reset_password') {
+            } elseif ('reset_password' === $action) {
                 $tempPassword = bin2hex(random_bytes(4));
                 $user->setPassword(password_hash($tempPassword, PASSWORD_BCRYPT));
-                $request->getSession()->set('temp_password_' . $user->getId(), $tempPassword);
+                $request->getSession()->set('temp_password_'.$user->getId(), $tempPassword);
             } else {
                 $dailyLimit = (int) $request->request->get('daily_limit', 5);
                 $user->setDailyLimit($dailyLimit);
             }
 
-            $userRepository->getEntityManager()->flush();
+            $entityManager->flush();
             $saved = true;
         }
 
-        $tempPassword = $request->getSession()->get('temp_password_' . $user->getId());
-        $request->getSession()->remove('temp_password_' . $user->getId());
+        $tempPassword = $request->getSession()->get('temp_password_'.$user->getId());
+        $request->getSession()->remove('temp_password_'.$user->getId());
 
         return $this->render('admin/user_edit.html.twig', [
             'admin' => $admin,
@@ -190,13 +193,14 @@ class AdminController extends AbstractController
     private function getAdminUser(Request $request, UserRepository $userRepository): ?User
     {
         $userId = $request->getSession()->get('admin_user_id');
-        if ($userId === null) {
+        if (null === $userId) {
             return null;
         }
 
         $user = $userRepository->find($userId);
-        if ($user === null || !$user->isAdmin()) {
+        if (null === $user || !$user->isAdmin()) {
             $request->getSession()->remove('admin_user_id');
+
             return null;
         }
 

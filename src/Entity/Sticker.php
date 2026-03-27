@@ -16,16 +16,16 @@ class Sticker
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    private ?StickerPack $pack = null;
+    private StickerPack $pack;
 
     #[ORM\Column(length: 255)]
-    private ?string $fileId = null;
+    private string $fileId;
 
     #[ORM\Column(length: 32)]
-    private ?string $emoji = null;
+    private string $emoji;
 
     #[ORM\Column(type: Types::TEXT)]
-    private ?string $prompt = null;
+    private string $prompt;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $imagePath = null;
@@ -43,7 +43,7 @@ class Sticker
         return $this->id;
     }
 
-    public function getPack(): ?StickerPack
+    public function getPack(): StickerPack
     {
         return $this->pack;
     }
@@ -51,10 +51,11 @@ class Sticker
     public function setPack(StickerPack $pack): static
     {
         $this->pack = $pack;
+
         return $this;
     }
 
-    public function getFileId(): ?string
+    public function getFileId(): string
     {
         return $this->fileId;
     }
@@ -62,10 +63,11 @@ class Sticker
     public function setFileId(string $fileId): static
     {
         $this->fileId = $fileId;
+
         return $this;
     }
 
-    public function getEmoji(): ?string
+    public function getEmoji(): string
     {
         return $this->emoji;
     }
@@ -73,10 +75,11 @@ class Sticker
     public function setEmoji(string $emoji): static
     {
         $this->emoji = $emoji;
+
         return $this;
     }
 
-    public function getPrompt(): ?string
+    public function getPrompt(): string
     {
         return $this->prompt;
     }
@@ -84,6 +87,7 @@ class Sticker
     public function setPrompt(string $prompt): static
     {
         $this->prompt = $prompt;
+
         return $this;
     }
 
@@ -95,6 +99,7 @@ class Sticker
     public function setImagePath(string $imagePath): static
     {
         $this->imagePath = $imagePath;
+
         return $this;
     }
 

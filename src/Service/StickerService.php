@@ -43,7 +43,7 @@ class StickerService
     public function ensurePack(User $user): StickerPack
     {
         $activePack = $user->getActiveStickerPack();
-        if ($activePack !== null) {
+        if (null !== $activePack) {
             return $activePack;
         }
 
@@ -53,6 +53,7 @@ class StickerService
             $pack = $packs[0];
             $user->setActiveStickerPack($pack);
             $this->entityManager->flush();
+
             return $pack;
         }
 
@@ -63,7 +64,7 @@ class StickerService
     public function createPack(User $user, string $title): StickerPack
     {
         $packCount = $this->stickerPackRepository->countByUser($user);
-        $packName = $packCount === 0
+        $packName = 0 === $packCount
             ? sprintf('stickers_%d_by_%s', $user->getTelegramId(), $this->botUsername)
             : sprintf('stickers_%d_%d_by_%s', $user->getTelegramId(), $packCount + 1, $this->botUsername);
 
@@ -138,13 +139,13 @@ class StickerService
         $sticker->setEmoji($emoji);
         $sticker->setPrompt($prompt);
 
-        $stickersDir = $this->projectDir . '/public/stickers';
+        $stickersDir = $this->projectDir.'/public/stickers';
         if (!is_dir($stickersDir)) {
             mkdir($stickersDir, 0775, true);
         }
-        $filename = uniqid('sticker_') . '.png';
-        file_put_contents($stickersDir . '/' . $filename, $pngData);
-        $sticker->setImagePath('stickers/' . $filename);
+        $filename = uniqid('sticker_').'.png';
+        file_put_contents($stickersDir.'/'.$filename, $pngData);
+        $sticker->setImagePath('stickers/'.$filename);
 
         $this->stickerRepository->save($sticker);
 
@@ -162,6 +163,7 @@ class StickerService
     private function createPlaceholderPng(): string
     {
         $image = $this->imageManager->create(512, 512)->fill('rgba(255, 255, 255, 0)');
+
         return $image->toPng()->toString();
     }
 

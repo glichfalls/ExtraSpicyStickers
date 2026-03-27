@@ -34,7 +34,7 @@ class OpenAiImageService
 
         $statusCode = $response->getStatusCode();
 
-        if ($statusCode !== 200) {
+        if (200 !== $statusCode) {
             $body = $response->getContent(false);
             $error = json_decode($body, true);
             $message = $error['error']['message'] ?? "OpenAI returned HTTP $statusCode";
@@ -62,7 +62,7 @@ class OpenAiImageService
                 'model' => 'gpt-image-1-mini',
                 'prompt' => $fullPrompt,
                 'images' => [
-                    ['image_url' => 'data:image/jpeg;base64,' . $imageBase64],
+                    ['image_url' => 'data:image/jpeg;base64,'.$imageBase64],
                 ],
                 'background' => 'transparent',
                 'output_format' => 'png',
@@ -72,7 +72,7 @@ class OpenAiImageService
 
         $statusCode = $response->getStatusCode();
 
-        if ($statusCode !== 200) {
+        if (200 !== $statusCode) {
             $responseBody = $response->getContent(false);
             $error = json_decode($responseBody, true);
             $message = $error['error']['message'] ?? "OpenAI returned HTTP $statusCode";
@@ -91,6 +91,7 @@ class OpenAiImageService
     private function buildStickerPrompt(string $userPrompt, string $style): string
     {
         $stylePrompt = self::STYLES[$style]['prompt'] ?? self::STYLES['default']['prompt'];
+
         return "Sticker: $userPrompt. $stylePrompt";
     }
 }

@@ -40,7 +40,7 @@ class RemixCommand extends AbstractCommand implements PublicCommandInterface
     public function isApplicable(Update $update): bool
     {
         $message = $update->getMessage();
-        if ($message === null) {
+        if (null === $message) {
             return false;
         }
 
@@ -82,6 +82,7 @@ class RemixCommand extends AbstractCommand implements PublicCommandInterface
 
         if (!$photos) {
             $this->messenger->reply($message, "Send a photo with /remix as caption, or reply to a photo with /remix.\n\nExamples:\n• Send photo with caption: /remix make it cartoon\n• Reply to a photo: /remix pixel art style --pixel");
+
             return;
         }
 
@@ -89,25 +90,31 @@ class RemixCommand extends AbstractCommand implements PublicCommandInterface
 
         try {
             $user = $this->guard->resolveUser($message);
-            if ($user === null) return;
+            if (null === $user) {
+                return;
+            }
 
-            if (!$this->guard->checkDailyLimit($message, $user)) return;
+            if (!$this->guard->checkDailyLimit($message, $user)) {
+                return;
+            }
 
             $pack = $this->guard->resolvePack($message, $user);
-            if ($pack === null) return;
+            if (null === $pack) {
+                return;
+            }
 
             // Get the largest photo
             $photo = end($photos);
             $fileId = $photo->getFileId();
 
-            $styleName = $input->style !== 'default' ? ' (' . OpenAiImageService::STYLES[$input->style]['name'] . ')' : '';
+            $styleName = 'default' !== $input->style ? ' ('.OpenAiImageService::STYLES[$input->style]['name'].')' : '';
             $this->messenger->reply($message, "Remixing your photo into a sticker$styleName...");
 
             $photoData = $this->botApi->downloadFile($fileId);
 
             $imageData = $this->openAiImageService->remixImage($photoData, $input->description, $input->style);
             $pngData = $this->stickerService->convertToPng($imageData);
-            $sticker = $this->stickerService->addSticker($pack, $pngData, $input->emoji, 'remix: ' . $input->description);
+            $sticker = $this->stickerService->addSticker($pack, $pngData, $input->emoji, 'remix: '.$input->description);
 
             $this->messenger->replySticker($message, $sticker->getFileId());
         } catch (\Throwable $e) {

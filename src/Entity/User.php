@@ -17,13 +17,13 @@ class User
     private ?int $id = null;
 
     #[ORM\Column(type: 'bigint', unique: true)]
-    private ?int $telegramId = null;
+    private int $telegramId;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $username = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $firstName = null;
+    private string $firstName;
 
     #[ORM\Column(options: ['default' => 5])]
     private int $dailyLimit = 5;
@@ -55,7 +55,7 @@ class User
         return $this->id;
     }
 
-    public function getTelegramId(): ?int
+    public function getTelegramId(): int
     {
         return $this->telegramId;
     }
@@ -63,6 +63,7 @@ class User
     public function setTelegramId(int $telegramId): static
     {
         $this->telegramId = $telegramId;
+
         return $this;
     }
 
@@ -74,10 +75,11 @@ class User
     public function setUsername(?string $username): static
     {
         $this->username = $username;
+
         return $this;
     }
 
-    public function getFirstName(): ?string
+    public function getFirstName(): string
     {
         return $this->firstName;
     }
@@ -85,6 +87,7 @@ class User
     public function setFirstName(string $firstName): static
     {
         $this->firstName = $firstName;
+
         return $this;
     }
 
@@ -96,6 +99,7 @@ class User
     public function setDailyLimit(int $dailyLimit): static
     {
         $this->dailyLimit = $dailyLimit;
+
         return $this;
     }
 
@@ -107,6 +111,7 @@ class User
     public function setBanned(bool $banned): static
     {
         $this->banned = $banned;
+
         return $this;
     }
 
@@ -118,6 +123,7 @@ class User
     public function setIsAdmin(bool $isAdmin): static
     {
         $this->isAdmin = $isAdmin;
+
         return $this;
     }
 
@@ -129,6 +135,7 @@ class User
     public function setPassword(?string $password): static
     {
         $this->password = $password;
+
         return $this;
     }
 
@@ -146,6 +153,7 @@ class User
     public function setActiveStickerPack(?StickerPack $pack): static
     {
         $this->activeStickerPack = $pack;
+
         return $this;
     }
 }

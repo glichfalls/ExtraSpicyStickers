@@ -1,6 +1,8 @@
 doctrine:
     dbal:
         url: '%env(resolve:DATABASE_URL)%'
+        types:
+            bigint: App\Doctrine\Type\BigIntType
         profiling_collect_backtrace: '%kernel.debug%'
         use_savepoints: true
     orm:

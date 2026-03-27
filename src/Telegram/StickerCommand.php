@@ -40,7 +40,7 @@ class StickerCommand extends AbstractCommand implements PublicCommandInterface
     {
         $text = $update->getMessage()?->getText();
 
-        if ($text === null) {
+        if (null === $text) {
             return false;
         }
 
@@ -52,8 +52,9 @@ class StickerCommand extends AbstractCommand implements PublicCommandInterface
         $message = $update->getMessage();
         $text = trim(preg_replace('/^\/sticker(@\w+)?\s*/', '', $message->getText()));
 
-        if ($text === 'styles' || $text === '--help') {
-            $this->messenger->reply($message, "Available styles:\n\n" . ParsedInput::styleList() . "\n\nUsage: /sticker 🐱 happy cat --pixel");
+        if ('styles' === $text || '--help' === $text) {
+            $this->messenger->reply($message, "Available styles:\n\n".ParsedInput::styleList()."\n\nUsage: /sticker 🐱 happy cat --pixel");
+
             return;
         }
 
@@ -61,19 +62,26 @@ class StickerCommand extends AbstractCommand implements PublicCommandInterface
 
         if (empty($input->description)) {
             $this->messenger->reply($message, "Please provide a description.\n\nExample: /sticker 🐱 happy orange cat\nWith style: /sticker 🐱 happy cat --pixel\n\nType /sticker styles to see all styles.");
+
             return;
         }
 
         try {
             $user = $this->guard->resolveUser($message);
-            if ($user === null) return;
+            if (null === $user) {
+                return;
+            }
 
-            if (!$this->guard->checkDailyLimit($message, $user)) return;
+            if (!$this->guard->checkDailyLimit($message, $user)) {
+                return;
+            }
 
             $pack = $this->guard->resolvePack($message, $user);
-            if ($pack === null) return;
+            if (null === $pack) {
+                return;
+            }
 
-            $styleName = $input->style !== 'default' ? ' (' . OpenAiImageService::STYLES[$input->style]['name'] . ')' : '';
+            $styleName = 'default' !== $input->style ? ' ('.OpenAiImageService::STYLES[$input->style]['name'].')' : '';
             $this->messenger->reply($message, "Generating your sticker$styleName...");
 
             $imageData = $this->openAiImageService->generateImage($input->description, $input->style);

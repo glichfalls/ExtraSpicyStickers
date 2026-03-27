@@ -41,20 +41,22 @@ class DevWebhookCommand extends Command
 
         if (!$ngrok->isRunning()) {
             $io->error('Failed to start ngrok. Is it installed?');
+
             return Command::FAILURE;
         }
 
         $publicUrl = $this->waitForNgrokUrl();
 
-        if ($publicUrl === null) {
+        if (null === $publicUrl) {
             $io->error('Timed out waiting for ngrok tunnel.');
             $ngrok->stop();
+
             return Command::FAILURE;
         }
 
         $io->info("ngrok tunnel: $publicUrl");
 
-        $webhookUrl = $publicUrl . '/webhook/';
+        $webhookUrl = $publicUrl.'/webhook/';
         $this->botApi->setWebhook($webhookUrl);
 
         $io->success("Webhook set to: $webhookUrl");
@@ -73,7 +75,7 @@ class DevWebhookCommand extends Command
             usleep(300_000);
 
             $response = @file_get_contents('http://127.0.0.1:4040/api/tunnels');
-            if ($response === false) {
+            if (false === $response) {
                 continue;
             }
 

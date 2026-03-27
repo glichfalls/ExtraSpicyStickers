@@ -41,7 +41,7 @@ class PackCommand extends AbstractCommand implements PublicCommandInterface
     {
         $text = $update->getMessage()?->getText();
 
-        if ($text === null) {
+        if (null === $text) {
             return false;
         }
 
@@ -55,11 +55,13 @@ class PackCommand extends AbstractCommand implements PublicCommandInterface
 
         try {
             $user = $this->guard->resolveUser($message);
-            if ($user === null) return;
+            if (null === $user) {
+                return;
+            }
 
-            if ($text === '' || $text === 'info') {
+            if ('' === $text || 'info' === $text) {
                 $this->handleInfo($message, $user);
-            } elseif ($text === 'list') {
+            } elseif ('list' === $text) {
                 $this->handleList($message, $user);
             } elseif (preg_match('/^new\s+(.+)$/i', $text, $matches)) {
                 $this->handleNew($message, $user, trim($matches[1]));
@@ -69,12 +71,12 @@ class PackCommand extends AbstractCommand implements PublicCommandInterface
                 $this->handleSwitch($message, $user, (int) $matches[1]);
             } else {
                 $this->messenger->reply($message,
-                    "Usage:\n" .
-                    "/pack — show current pack info\n" .
-                    "/pack list — list all your packs\n" .
-                    "/pack new <title> — create a new pack\n" .
-                    "/pack rename <title> — rename current pack\n" .
-                    "/pack switch <number> — switch to a pack by number"
+                    "Usage:\n".
+                    "/pack — show current pack info\n".
+                    "/pack list — list all your packs\n".
+                    "/pack new <title> — create a new pack\n".
+                    "/pack rename <title> — rename current pack\n".
+                    '/pack switch <number> — switch to a pack by number'
                 );
             }
         } catch (\Throwable $e) {
@@ -94,6 +96,7 @@ class PackCommand extends AbstractCommand implements PublicCommandInterface
 
         if (empty($packs)) {
             $this->messenger->reply($message, "You don't have any sticker packs yet. Use /sticker to create your first one, or /pack new <title> to create one with a custom name.");
+
             return;
         }
 
@@ -103,7 +106,7 @@ class PackCommand extends AbstractCommand implements PublicCommandInterface
         $text = "📦 Active pack: {$activePack->getTitle()}\n";
         $text .= "🔗 t.me/addstickers/{$activePack->getName()}\n";
         $text .= "📁 You have {$packCount} pack(s) total\n\n";
-        $text .= "Use /pack list to see all packs.";
+        $text .= 'Use /pack list to see all packs.';
 
         $this->messenger->reply($message, $text);
     }
@@ -114,6 +117,7 @@ class PackCommand extends AbstractCommand implements PublicCommandInterface
 
         if (empty($packs)) {
             $this->messenger->reply($message, "You don't have any sticker packs yet. Use /pack new <title> to create one.");
+
             return;
         }
 
@@ -122,7 +126,7 @@ class PackCommand extends AbstractCommand implements PublicCommandInterface
 
         foreach ($packs as $i => $pack) {
             $num = $i + 1;
-            $active = ($activePack !== null && $pack->getId() === $activePack->getId()) ? ' ✅' : '';
+            $active = (null !== $activePack && $pack->getId() === $activePack->getId()) ? ' ✅' : '';
             $lines[] = "{$num}. {$pack->getTitle()}{$active}";
         }
 
@@ -134,7 +138,8 @@ class PackCommand extends AbstractCommand implements PublicCommandInterface
     private function handleNew(Message $message, User $user, string $title): void
     {
         if (mb_strlen($title) > 64) {
-            $this->messenger->reply($message, "Pack title must be 64 characters or less.");
+            $this->messenger->reply($message, 'Pack title must be 64 characters or less.');
+
             return;
         }
 
@@ -144,30 +149,33 @@ class PackCommand extends AbstractCommand implements PublicCommandInterface
             if (str_contains($e->getMessage(), 'PEER_ID_INVALID')) {
                 $botUsername = $_ENV['TELEGRAM_BOT_USERNAME'] ?? 'the bot';
                 $this->messenger->reply($message, "Please start a private chat with @$botUsername first, then try again.");
+
                 return;
             }
             throw $e;
         }
 
         $this->messenger->reply($message,
-            "✅ Created new pack: {$title}\n" .
-            "🔗 t.me/addstickers/{$pack->getName()}\n\n" .
-            "This is now your active pack. New stickers will be added here."
+            "✅ Created new pack: {$title}\n".
+            "🔗 t.me/addstickers/{$pack->getName()}\n\n".
+            'This is now your active pack. New stickers will be added here.'
         );
     }
 
     private function handleRename(Message $message, User $user, string $newTitle): void
     {
         if (mb_strlen($newTitle) > 64) {
-            $this->messenger->reply($message, "Pack title must be 64 characters or less.");
+            $this->messenger->reply($message, 'Pack title must be 64 characters or less.');
+
             return;
         }
 
         $activePack = $user->getActiveStickerPack();
-        if ($activePack === null) {
+        if (null === $activePack) {
             $packs = $this->stickerPackRepository->findAllByUser($user);
             if (empty($packs)) {
                 $this->messenger->reply($message, "You don't have any sticker packs yet.");
+
                 return;
             }
             $activePack = $packs[0];
@@ -183,7 +191,8 @@ class PackCommand extends AbstractCommand implements PublicCommandInterface
         $packs = $this->stickerPackRepository->findAllByUser($user);
 
         if ($number < 1 || $number > count($packs)) {
-            $this->messenger->reply($message, "Invalid pack number. Use /pack list to see your packs.");
+            $this->messenger->reply($message, 'Invalid pack number. Use /pack list to see your packs.');
+
             return;
         }
 
@@ -192,9 +201,9 @@ class PackCommand extends AbstractCommand implements PublicCommandInterface
         $this->entityManager->flush();
 
         $this->messenger->reply($message,
-            "✅ Switched to: {$pack->getTitle()}\n" .
-            "🔗 t.me/addstickers/{$pack->getName()}\n\n" .
-            "New stickers will be added to this pack."
+            "✅ Switched to: {$pack->getTitle()}\n".
+            "🔗 t.me/addstickers/{$pack->getName()}\n\n".
+            'New stickers will be added to this pack.'
         );
     }
 }

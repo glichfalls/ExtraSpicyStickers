@@ -35,10 +35,11 @@ class SyncStickersCommand extends Command
 
         if (empty($packs)) {
             $io->warning('No sticker packs found in the database.');
+
             return Command::SUCCESS;
         }
 
-        $stickersDir = $this->projectDir . '/public/stickers';
+        $stickersDir = $this->projectDir.'/public/stickers';
         if (!is_dir($stickersDir)) {
             mkdir($stickersDir, 0775, true);
         }
@@ -79,38 +80,38 @@ class SyncStickersCommand extends Command
                     $sticker->setPrompt('(synced from Telegram)');
                     $this->stickerRepository->save($sticker);
                     $existingFileIds[$fileId] = $sticker;
-                    $totalAdded++;
+                    ++$totalAdded;
                     $io->text(sprintf('  + Added sticker %s %s', $emoji, $fileId));
                 }
             }
 
             // Download images for stickers without imagePath
             foreach ($existingFileIds as $sticker) {
-                if ($sticker->getImagePath() !== null) {
+                if (null !== $sticker->getImagePath()) {
                     continue;
                 }
 
                 try {
                     $fileData = $this->botApi->downloadFile($sticker->getFileId());
-                    $filename = uniqid('sticker_') . '.webp';
-                    file_put_contents($stickersDir . '/' . $filename, $fileData);
+                    $filename = uniqid('sticker_').'.webp';
+                    file_put_contents($stickersDir.'/'.$filename, $fileData);
 
                     // Convert to PNG
-                    $pngFilename = uniqid('sticker_') . '.png';
-                    $converted = @imagecreatefromwebp($stickersDir . '/' . $filename);
-                    if ($converted !== false) {
+                    $pngFilename = uniqid('sticker_').'.png';
+                    $converted = @imagecreatefromwebp($stickersDir.'/'.$filename);
+                    if (false !== $converted) {
                         imagesavealpha($converted, true);
-                        imagepng($converted, $stickersDir . '/' . $pngFilename);
+                        imagepng($converted, $stickersDir.'/'.$pngFilename);
                         imagedestroy($converted);
-                        unlink($stickersDir . '/' . $filename);
-                        $sticker->setImagePath('stickers/' . $pngFilename);
+                        unlink($stickersDir.'/'.$filename);
+                        $sticker->setImagePath('stickers/'.$pngFilename);
                     } else {
                         // Keep as webp if conversion fails
-                        $sticker->setImagePath('stickers/' . $filename);
+                        $sticker->setImagePath('stickers/'.$filename);
                     }
 
                     $this->stickerRepository->save($sticker);
-                    $totalDownloaded++;
+                    ++$totalDownloaded;
                     $io->text(sprintf('  ↓ Downloaded image for %s %s', $sticker->getEmoji(), $sticker->getFileId()));
                 } catch (\Exception $e) {
                     $io->warning(sprintf('  ! Failed to download %s: %s', $sticker->getFileId(), $e->getMessage()));

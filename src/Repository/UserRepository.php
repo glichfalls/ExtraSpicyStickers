@@ -20,7 +20,7 @@ class UserRepository extends ServiceEntityRepository
     {
         $user = $this->findOneBy(['telegramId' => $telegramId]);
 
-        if ($user === null) {
+        if (null === $user) {
             $user = new User();
             $user->setTelegramId($telegramId);
         }

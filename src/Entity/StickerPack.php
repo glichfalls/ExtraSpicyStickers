@@ -16,10 +16,10 @@ class StickerPack
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'stickerPacks')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?User $user = null;
+    private User $user;
 
     #[ORM\Column(length: 255, unique: true)]
-    private ?string $name = null;
+    private string $name;
 
     #[ORM\Column(length: 255)]
     private string $title = '';
@@ -37,7 +37,7 @@ class StickerPack
         return $this->id;
     }
 
-    public function getUser(): ?User
+    public function getUser(): User
     {
         return $this->user;
     }
@@ -45,10 +45,11 @@ class StickerPack
     public function setUser(User $user): static
     {
         $this->user = $user;
+
         return $this;
     }
 
-    public function getName(): ?string
+    public function getName(): string
     {
         return $this->name;
     }
@@ -56,6 +57,7 @@ class StickerPack
     public function setName(string $name): static
     {
         $this->name = $name;
+
         return $this;
     }
 
@@ -67,6 +69,7 @@ class StickerPack
     public function setTitle(string $title): static
     {
         $this->title = $title;
+
         return $this;
     }
 

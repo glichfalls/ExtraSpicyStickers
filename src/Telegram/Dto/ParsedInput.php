@@ -22,6 +22,7 @@ readonly class ParsedInput
             if (isset(OpenAiImageService::STYLES[$flag])) {
                 $style = $flag;
             }
+
             return '';
         }, $text);
 
@@ -45,6 +46,7 @@ readonly class ParsedInput
         foreach (OpenAiImageService::STYLES as $key => $info) {
             $lines[] = "  --$key — {$info['name']}";
         }
+
         return implode("\n", $lines);
     }
 }

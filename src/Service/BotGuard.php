@@ -23,12 +23,13 @@ readonly class BotGuard
         $from = $message->getFrom();
         $user = $this->userRepository->findOrCreateByTelegramData(
             $from->getId(),
-            $from->getFirstName() ?? 'User',
+            $from->getFirstName(),
             $from->getUsername()
         );
 
         if ($user->isBanned()) {
             $this->messenger->reply($message, 'Your account has been suspended.');
+
             return null;
         }
 
@@ -41,6 +42,7 @@ readonly class BotGuard
 
         if ($recentCount >= $user->getDailyLimit()) {
             $this->messenger->reply($message, "You've reached your daily limit of {$user->getDailyLimit()} stickers. Try again tomorrow!");
+
             return false;
         }
 
@@ -55,6 +57,7 @@ readonly class BotGuard
             if (str_contains($e->getMessage(), 'PEER_ID_INVALID')) {
                 $botUsername = $_ENV['TELEGRAM_BOT_USERNAME'] ?? 'the bot';
                 $this->messenger->reply($message, "Please start a private chat with @$botUsername first, then try again.");
+
                 return null;
             }
             throw $e;

@@ -51,20 +51,19 @@ readonly class TelegramMessenger
             'text' => $text,
         ];
 
-        if ($threadId !== null) {
+        if (null !== $threadId) {
             $params['message_thread_id'] = $threadId;
         }
 
         $this->botApi->call('sendMessage', $params);
     }
 
+    /** @param array<string, mixed> $params */
     private function addThreadId(array &$params, Message $message): void
     {
-        if (method_exists($message, 'getMessageThreadId')) {
-            $threadId = $message->getMessageThreadId();
-            if ($threadId !== null) {
-                $params['message_thread_id'] = $threadId;
-            }
+        $threadId = $message->getMessageThreadId();
+        if (null !== $threadId) {
+            $params['message_thread_id'] = $threadId;
         }
     }
 }
