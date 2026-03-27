@@ -43,6 +43,7 @@ jobs:
             TELEGRAM_BOT_USERNAME=${{ secrets.TELEGRAM_BOT_USERNAME }}
             OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
             DATABASE_URL=${{ secrets.DATABASE_URL }}
+            SENTRY_DSN=${{ secrets.SENTRY_DSN }}
             ENVEOF
             sed -i 's/^            //' .env.local
 
