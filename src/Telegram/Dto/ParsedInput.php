@@ -4,12 +4,12 @@ namespace App\Telegram\Dto;
 
 use App\Service\OpenAiImageService;
 
-class ParsedInput
+readonly class ParsedInput
 {
     public function __construct(
-        public readonly string $description,
-        public readonly string $emoji,
-        public readonly string $style,
+        public string $description,
+        public string $emoji,
+        public string $style,
     ) {
     }
 
