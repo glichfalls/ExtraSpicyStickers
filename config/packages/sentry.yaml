@@ -4,9 +4,9 @@ sentry:
         environment: '%kernel.environment%'
         release: '%env(default::APP_VERSION)%'
         traces_sample_rate: 0.0
-    ignore_exceptions:
-        - Symfony\Component\HttpKernel\Exception\NotFoundHttpException
-        - Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException
-        - Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException
-        - Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException
-        - Symfony\Component\Security\Core\Exception\AuthenticationException
+        ignore_exceptions:
+            - Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+            - Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException
+            - Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException
+            - Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException
+            - Symfony\Component\Security\Core\Exception\AuthenticationException
