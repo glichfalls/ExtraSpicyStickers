@@ -4,3 +4,6 @@ sentry:
         environment: '%kernel.environment%'
         release: '%env(default::APP_VERSION)%'
         traces_sample_rate: 0.1
+    ignore_exceptions:
+        - Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+        - Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException
